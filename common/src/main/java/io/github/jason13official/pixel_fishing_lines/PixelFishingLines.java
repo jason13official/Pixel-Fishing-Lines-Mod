@@ -2,7 +2,7 @@ package io.github.jason13official.pixel_fishing_lines;
 
 import net.minecraft.resources.ResourceLocation;
 
-public class PixelFishingLinesClient {
+public class PixelFishingLines {
 
   public static void init() {
   }

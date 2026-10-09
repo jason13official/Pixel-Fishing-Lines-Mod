@@ -16,7 +16,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "io.github.jason13official.pixel_fishing_lines.PixelFishingLinesClientFabric"
+      "io.github.jason13official.pixel_fishing_lines.PixelFishingLinesFabric"
     ]
   },
   "mixins": [
@@ -28,9 +28,6 @@
     "fabric-api": "*",
     "minecraft": "${fabric_minecraft_version_range}",
     "java": ">=${java_version}"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }
   
