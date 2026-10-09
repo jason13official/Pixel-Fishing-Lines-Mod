@@ -13,13 +13,10 @@
   },
   "license": "${license}",
   "icon": "${mod_id}.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
-    "main": [
-      "io.github.jason13official.examplemod.ExampleModFabric"
-    ],
     "client": [
-      "io.github.jason13official.examplemod.ExampleModClientFabric"
+      "io.github.jason13official.pixel_fishing_lines.PixelFishingLinesClientFabric"
     ]
   },
   "mixins": [
@@ -30,8 +27,7 @@
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": "*",
     "minecraft": "${fabric_minecraft_version_range}",
-    "java": ">=${java_version}",
-    "monolib": "*"
+    "java": ">=${java_version}"
   },
   "suggests": {
     "another-mod": "*"
