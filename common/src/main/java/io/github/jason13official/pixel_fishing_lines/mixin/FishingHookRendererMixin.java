@@ -29,6 +29,8 @@ public abstract class FishingHookRendererMixin extends EntityRenderer<FishingHoo
   @Unique
   private static final int pixel_fishing_lines$SEGMENTS = 32;
   @Unique
+  private static final float pixel_fishing_lines$FULL_SIZE_DISTANCE = 4.0F;
+  @Unique
   private static float pixel_fishing_lines$dx, pixel_fishing_lines$dy, pixel_fishing_lines$dz;
 
   protected FishingHookRendererMixin(EntityRendererProvider.Context context) {
@@ -82,9 +84,9 @@ public abstract class FishingHookRendererMixin extends EntityRenderer<FishingHoo
     Window window = Minecraft.getInstance().getWindow();
     float width = window.getWidth();
     float height = window.getHeight();
-    float cell = (float) (pixel_fishing_lines$PIXEL_SIZE * window.getGuiScale());
+    float baseCell = (float) (pixel_fishing_lines$PIXEL_SIZE * window.getGuiScale());
 
-    // project the curve samples to (cellX, cellY, ndcZ); null when behind the camera
+    // project the curve samples to (screenX, screenY, ndcZ, viewDepth) in framebuffer pixels; null when behind the camera
     float[][] pts = new float[pixel_fishing_lines$SEGMENTS + 1][];
     for (int i = 0; i <= pixel_fishing_lines$SEGMENTS; i++) {
 
@@ -97,14 +99,15 @@ public abstract class FishingHookRendererMixin extends EntityRenderer<FishingHoo
         continue;
       }
 
-      float sx = (clip.x / clip.w * 0.5F + 0.5F) * width / cell;
-      float sy = (clip.y / clip.w * 0.5F + 0.5F) * height / cell;
-      pts[i] = new float[]{sx, sy, clip.z / clip.w};
+      float sx = (clip.x / clip.w * 0.5F + 0.5F) * width;
+      float sy = (clip.y / clip.w * 0.5F + 0.5F) * height;
+      pts[i] = new float[]{sx, sy, clip.z / clip.w, clip.w};
     }
 
     VertexConsumer consumer = buffer.getBuffer(RenderType.debugQuads());
     int lastX = Integer.MIN_VALUE;
     int lastY = Integer.MIN_VALUE;
+    float lastCell = 0.0F;
     for (int i = 0; i < pixel_fishing_lines$SEGMENTS; i++) {
 
       float[] a = pts[i];
@@ -114,12 +117,17 @@ public abstract class FishingHookRendererMixin extends EntityRenderer<FishingHoo
         continue;
       }
 
-      // bresenham-style walk between the two samples
+      // pixel size shrinks with distance, snapped to whole framebuffer pixels (min 1)
+      float depth = (a[3] + b[3]) * 0.5F;
+      float scale = Math.min(1.0F, pixel_fishing_lines$FULL_SIZE_DISTANCE / depth);
+      float cell = Math.max(1.0F, Math.round(baseCell * scale));
 
-      int x0 = (int) Math.floor(a[0]);
-      int y0 = (int) Math.floor(a[1]);
-      int x1 = (int) Math.floor(b[0]);
-      int y1 = (int) Math.floor(b[1]);
+      // bresenham-style walk between the two samples, on a grid of this segment's pixel size
+
+      int x0 = (int) Math.floor(a[0] / cell);
+      int y0 = (int) Math.floor(a[1] / cell);
+      int x1 = (int) Math.floor(b[0] / cell);
+      int y1 = (int) Math.floor(b[1] / cell);
 
       int steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
       for (int s = 0; s <= steps; s++) {
@@ -128,12 +136,13 @@ public abstract class FishingHookRendererMixin extends EntityRenderer<FishingHoo
         int cx = Math.round(x0 + (x1 - x0) * f);
         int cy = Math.round(y0 + (y1 - y0) * f);
 
-        if (cx == lastX && cy == lastY) {
+        if (cx == lastX && cy == lastY && cell == lastCell) {
           continue;
         }
 
         lastX = cx;
         lastY = cy;
+        lastCell = cell;
 
         float ndcZ = a[2] + (b[2] - a[2]) * f; // ndc depth is linear in screen space
         pixel_fishing_lines$cellQuad(consumer, invMvp, cx, cy, ndcZ, cell, width, height);
