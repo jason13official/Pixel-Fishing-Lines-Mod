@@ -12,6 +12,7 @@ issueTrackerURL="${mod_url}/issues" #optional
     logoFile = "${mod_id}.png" #optional (needs to be in the root of your mod jar (root of your 'resources' folder))
     credits = "${credits}" #optional
     authors = "${mod_author}" #optional
+    displayTest = "IGNORE_ALL_VERSION" # client-only mod, don't require it on servers
     description = '''${description}''' #mandatory (Supports multiline text)
 
 [[dependencies.${mod_id}]] #optional
@@ -19,18 +20,11 @@ issueTrackerURL="${mod_url}/issues" #optional
     mandatory = true #mandatory
     versionRange = "[${forge_version},)" #mandatory
     ordering = "NONE" # The order that this dependency should load in relation to your mod, required to be either 'BEFORE' or 'AFTER' if the dependency is not mandatory
-    side = "BOTH" # Side this dependency is applied on - 'BOTH', 'CLIENT' or 'SERVER'
+    side = "CLIENT" # Side this dependency is applied on - 'BOTH', 'CLIENT' or 'SERVER'
 
 [[dependencies.${mod_id}]]
     modId = "minecraft"
     mandatory = true
     versionRange = "${forge_minecraft_version_range}"
     ordering = "NONE"
-    side = "BOTH"
-
-[[dependencies.${mod_id}]]
-    modId = "monolib"
-    mandatory = true
-    versionRange = "[0,)"
-    ordering = "NONE"
-    side = "BOTH"
+    side = "CLIENT"
